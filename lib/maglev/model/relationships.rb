@@ -21,6 +21,12 @@ module Maglev
         model_value.define_singleton_method "delegate" {
           delegate
         }
+        if !Maglev.force_remote_relationship_syntax
+          model_value.singleton_class.class_eval do
+            alias_method :find, :remote_find
+            alias_method :find_all, :remote_find_all
+          end
+        end
       end
     end
     # OPTIONS
