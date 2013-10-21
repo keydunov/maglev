@@ -56,11 +56,13 @@ module Maglev
           when Array
             arr_rep = json
           when Hash
-            [self.record_class.inspect.pluralize.to_sym, self.collection_options[:json_path]].collect do |key_path|
-              if json.include? key_path
-                arr_rep = json[key_path]
-              end
-            end
+            arr_rep = json[record_class_underscore.pluralize]
+            #[self.record_class.inspect.pluralize.to_sym, self.collection_options[:json_path]].collect do |key_path|
+            #  puts key_path
+            #  if json.include? key_path
+            #    arr_rep = json[key_path]
+            #  end
+            #end
           else
             # the returned data was something else
             # ie a string, number
