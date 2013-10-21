@@ -8,6 +8,26 @@ module Maglev
       self
     end
 
+    # move to utils
+    def underscore(camel_cased_word)
+      word = camel_cased_word.to_s.dup
+      word.gsub!('::', '/')
+      word.gsub!(/(?:([A-Za-z\d])|^)(#{acronym_regex})(?=\b|[^a-z])/) { "#{$1}#{$1 && '_'}#{$2.downcase}" }
+      word.gsub!(/([A-Z\d]+)([A-Z][a-z])/,'\1_\2')
+      word.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
+      word.tr!("-", "_")
+      word.downcase!
+      word
+    end
+
+    def acronym_regex
+      /(?=a)b/
+    end
+
+    def record_class_underscore
+      underscore(record_class.name)
+    end
+
     def create_model(json)
       record_class.new(json)
     end
@@ -15,7 +35,10 @@ module Maglev
     def remote_find(id, params = {}, &block)
       get(member_path.format(params.merge(id: id), self.delegate)) do |response, json|
         if response.ok?
-          obj = create_model(json)
+          attributes = json[record_class_underscore]
+          puts record_class_underscore
+          puts attributes
+          obj = create_model(attributes)
           request_block_call(block, obj, response)
         else
           request_block_call(block, nil, response)
