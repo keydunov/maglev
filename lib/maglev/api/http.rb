@@ -22,12 +22,12 @@ module Maglev
       end
 
       def http_call(method, url, call_options = {}, &block)
-        _options = call_options 
+        _options = call_options
         _options.merge! self.default_url_options || {}
 
         url += self.extension if self.extension
         url = complete_url(url) if self.root
-        
+
         Maglev::API.http_call(method, url, _options, &block)
       end
     end

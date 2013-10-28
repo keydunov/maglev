@@ -33,6 +33,8 @@ module Maglev
     end
 
     def remote_find(id, params = {}, &block)
+      raise Maglev::Error::BlockRequiredError, "No block given" if !block
+
       get(member_path.format(params.merge(id: id), self.delegate)) do |response, json|
         if response.ok?
           attributes = json[record_class_underscore]
@@ -47,9 +49,12 @@ module Maglev
     end
 
     def remote_find_all(params = {}, &block)
+      raise Maglev::Error::BlockRequiredError, "No block given" if !block
+
       url = collection_path.format(params, self.delegate)
-      get(url) do |response, json|
+      get(url, params) do |response, json|
         if response.ok?
+          puts json
           objs = []
           arr_rep = nil
           case json
@@ -57,21 +62,13 @@ module Maglev
             arr_rep = json
           when Hash
             arr_rep = json[record_class_underscore.pluralize]
-            #[self.record_class.inspect.pluralize.to_sym, self.collection_options[:json_path]].collect do |key_path|
-            #  puts key_path
-            #  if json.include? key_path
-            #    arr_rep = json[key_path]
-            #  end
-            #end
           else
             # the returned data was something else
             # ie a string, number
             request_block_call(block, nil, response)
             return
           end
-          arr_rep && arr_rep.each { |one_obj_hash|
-            objs << create_model(one_obj_hash)
-          }
+          arr_rep && arr_rep.each { |one_obj_hash| objs << create_model(one_obj_hash) }
           request_block_call(block, objs, response)
         else
           request_block_call(block, nil, response)
@@ -81,8 +78,8 @@ module Maglev
 
     # Enables the find
     private
+
     def request_block_call(block, default_arg, extra_arg)
-      raise Maglev::Error::BlockRequiredError, "No block given" if !block
       case block.arity
       when 1
         block.call default_arg
@@ -108,5 +105,6 @@ module Maglev
         end
       end
     end
+
   end
 end

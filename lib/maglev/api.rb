@@ -12,6 +12,7 @@ module Maglev
         _options.merge! self.default_url_options || {}
 
         if query = _options.delete(:query)
+          puts "query", query
           url += "?" if url.index("?").nil?
 
           url += query.map { |k,v| "#{k}=#{v}"}.join('&')
